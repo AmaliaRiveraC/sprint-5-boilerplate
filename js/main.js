@@ -68,7 +68,7 @@ var agregarTema = function (e) {
     author_name: nuevoAutor,
     content: nuevoTema
   }, function (tema) {
-    crearTemas(tema);
+    mostrarTemas(tema);
     $('#myModal').modal('hide');
   });
 };
@@ -101,22 +101,28 @@ var mostrarRespuestas = function (e) {
 // Esta funcion jala las respuestas de la api y las muestra en el DOM (un modal) 
 var crearRespuestas = function (respuesta) {
   var plantillaFinalRespuestas = " ";
-
   var id = respuesta.id;
   var autorRespuesta = respuesta.author_name;
   var mensaje = respuesta.content;
-  console.log(mensaje);
   var fecha = respuesta.created_at;
   var topicId = respuesta.topic_id;
 
   plantillaFinalRespuestas += plantillaRespuestas
-    .replace("__id__", id)
+    .replace("__id__", topicId)
     .replace("__autor__", autorRespuesta)
     .replace("__respuesta__", mensaje)
     .replace("__fecha__", fecha)
     .replace("__topicId", topicId);
 
   $("#respuestasModal").append(plantillaFinalRespuestas);
+  
+  agregarRespuesta({
+    "author_name": autorRespuesta,
+    "content": mensaje,
+    "created_at": fecha,
+    "id": id,
+    "topic_id": topicId
+  });
 };
 
 // Esta funcion cierra el modal donde aparecen las respuestas para abrir otro donde se podra agregar otra respuesta
@@ -125,24 +131,58 @@ var cerrarModalRespuestas = function (e) {
   $("#modalRespuestas").modal("hide");
 };
 
-
-var agregarRespuesta = function (e) {
-  e.preventDefault();
+// Esta funcion pretende agregar respuestas
+var agregarRespuesta = function (respuesta) {
   var $padre = $("#padre");
   var $id = $padre.attr("data-id");
   
 
   var autorRespuesta = $("#autorRespuesta").val();
   var contenidoRespuesta = $("#respuesta").val();
+  
 
-  //var $nuevaRespuesta = $("#nuevaRespuesta");
+  var date = new Date();
+  var dia = date.getDate();
+  var mes = date.getMonth() + 1;
+  var hora = date.getHours();
+  var ano = date.getFullYear();
+  var minutos = date.getMinutes();
+  var segundos = date.getSeconds();
+  
+  /* Ceros en formatos fecha dd:mm:aa y hora hh:mm:ss */
+  if (dia < 10) {
+    dia = "0" + date.getDate();
+  }
+
+  if (mes < 10) {
+    mes = "0" + mes;
+  }
+
+  if (hora < 10) {
+    hora = "0" + date.getHours();
+  }
+
+  if (minutos < 10) {
+    minutos = "0" + date.getMinutes();
+  }
+
+  if (segundos < 10) {
+    segundos = "0" + date.getSeconds();
+  }
+  
+  var fecha = dia + "-" + mes + "-" + ano;
+  var hora =hora + ":" + minutos + ":" + segundos;
+  var created = fecha + "T" + hora + ".501Z";
+  
+  
+
 
   $.post(api.url + $id + "/responses", {
     author_name: autorRespuesta,
-    content: contenidoRespuesta
+    content: contenidoRespuesta,
+    topic_id: $id
   }, function (respuesta) {
-    console.log(respuesta)
-    crearRespuestas(respuesta);
+    
     $("#crearRespuesta").modal("hide");
     $("#modalRespuestas").modal("show");
   });

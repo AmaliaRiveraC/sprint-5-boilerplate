@@ -2,24 +2,43 @@ var api = {
   url: "https://examen-laboratoria-sprint-5.herokuapp.com/topics/"
 };
 
+var arregloTemas = [];
+
+var plantillaTema = '<div id="padre" class="jumbotron col-xs-8" data-id="__id__">' +
+  '<h3>__tema__</h3>' +
+  '<p>by __autor__</p>' +
+  '<p><a class="res btn btn-primary btn-lg" data-toggle="modal" data-target="#modalRespuestas" href="#" role="button">__respuestas__</a></p>' +
+  '</div>';
+
+var plantillaRespuestas = '<div data-id="__id__">' +
+  '<p>Autor: __autor__</p>' +
+  '<p>Mensaje: __respuesta__</p>' +
+  '<p>fecha: __fecha__</p>' +
+  '<p>topic id: __topicId__</p>' +
+  '</div>';
+
+// Esta funcion carga la pagina y agrega eventos a los formularios y botones
 var cargarPagina = function () {
   cargarTemas();
   /*$("#filtrar").keyup(filtrarTemas);
   $("#buscando").click(filtrarTemas);*/
   $("#formularioTema").submit(agregarTema);
+  $("#botonCrearRespuesta").click(cerrarModalRespuestas);
+  $("#formularioRespuesta").submit(agregarRespuesta);
 };
 
+// Esta funcion jala los objetos de la api
 var cargarTemas = function () {
   $.getJSON(api.url, function (temas) {
     temas.forEach(mostrarTemas);
+
+    /* //Agregando objetos a arreglo para poder filtrar
+     arregloTemas.push(temas);
+     console.log(arregloTemas);*/
   });
 };
 
-var plantillaTema = '<div class="jumbotron col-xs-8" data-id="__id__">' +
-  '<h3>__tema__</h3>' +
-  '<p>by __autor__</p>' +
-  '<p><a class="res btn btn-primary btn-lg" data-toggle="modal" data-target="#modalRespuestas" href="#" role="button">__respuestas__</a></p>' +
-  '</div>';
+
 
 var mostrarTemas = function (tema) {
   var plantillaFinalTema = " ";
@@ -39,10 +58,10 @@ var mostrarTemas = function (tema) {
   $("#listaTemas").append(plantillaFinalTema);
 };
 
+// Esta funcion agrega los objetos de la api al DOM
 var agregarTema = function (e) {
   e.preventDefault();
   var nuevoAutor = $("#nuevoAutor").val();
-  console.log(nuevoAutor);
   var nuevoTema = $("#nuevoTema").val();
 
   $.post(api.url, {
@@ -54,40 +73,86 @@ var agregarTema = function (e) {
   });
 };
 
-/*var filtrarTemas = function (temas) {
+/*var filtrarTemas = function () {
   //e.preventDefault();
-  console.log(temas);
   var busqueda = $("#filtrar").val().toLowerCase();
-  var temasFiltrados = temas.filter(function (tema) {
-    return tema.autor.toLowerCase().indexOf(busqueda) >= 0;
+  var temasFiltrados = arregloTemas.filter(function (tema) {
+    return tema.content.toLowerCase().indexOf(busqueda) >= 0;
   });
   mostrarTemas(temasFiltrados);
 };*/
 
+
+// Esta funcion muestra un modal con las respuestas a tema de la api
 var mostrarRespuestas = function (e) {
   e.preventDefault();
   var $padre = $(this).parents("div");
   var $id = $padre.attr("data-id");
 
   $.getJSON(api.url + $id + "/responses", function (respuestas) {
-    console.log(respuestas);
-    var $contenedorRespuestas = $("#modalRespuestas");
     respuestas.forEach(function (respuesta) {
-      var autorRespuesta = respuesta.author_name;
-      var mensaje = respuesta.content;
-      var fecha = respuesta.created_at;
 
-      var $autor = $("#autorRespuesta");
-      var $mensajeRespuesta = $("#respuesta");
-      var $fecha = $("#fechaRespuesta");
-
-      $autor.text(autorRespuesta);
-      $mensajeRespuesta.text(mensaje);
-      $fecha.text(fecha);
-      
+      crearRespuestas(respuesta);
     });
-
   });
+};
+
+
+// Esta funcion jala las respuestas de la api y las muestra en el DOM (un modal) 
+var crearRespuestas = function (respuesta) {
+  var plantillaFinalRespuestas = " ";
+
+  var id = respuesta.id;
+  var autorRespuesta = respuesta.author_name;
+  var mensaje = respuesta.content;
+  console.log(mensaje);
+  var fecha = respuesta.created_at;
+  var topicId = respuesta.topic_id;
+
+  plantillaFinalRespuestas += plantillaRespuestas
+    .replace("__id__", id)
+    .replace("__autor__", autorRespuesta)
+    .replace("__respuesta__", mensaje)
+    .replace("__fecha__", fecha)
+    .replace("__topicId", topicId);
+
+  $("#respuestasModal").append(plantillaFinalRespuestas);
+};
+
+// Esta funcion cierra el modal donde aparecen las respuestas para abrir otro donde se podra agregar otra respuesta
+var cerrarModalRespuestas = function (e) {
+  e.preventDefault();
+  $("#modalRespuestas").modal("hide");
+};
+
+
+var agregarRespuesta = function (e) {
+  e.preventDefault();
+  var $padre = $("#padre");
+  var $id = $padre.attr("data-id");
+  
+
+  var autorRespuesta = $("#autorRespuesta").val();
+  var contenidoRespuesta = $("#respuesta").val();
+
+  //var $nuevaRespuesta = $("#nuevaRespuesta");
+
+  $.post(api.url + $id + "/responses", {
+    author_name: autorRespuesta,
+    content: contenidoRespuesta
+  }, function (respuesta) {
+    console.log(respuesta)
+    crearRespuestas(respuesta);
+    $("#crearRespuesta").modal("hide");
+    $("#modalRespuestas").modal("show");
+  });
+
+
+  /*var fecha = $("<p>fecha: </p>");
+  var $fecha = $("<span />");
+  
+  var topic = $("<p>topic id: </p>");*/
+
 };
 
 $(document).on("click", ".res", mostrarRespuestas);

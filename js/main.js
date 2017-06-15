@@ -116,13 +116,6 @@ var crearRespuestas = function (respuesta) {
 
   $("#respuestasModal").append(plantillaFinalRespuestas);
   
-  agregarRespuesta({
-    "author_name": autorRespuesta,
-    "content": mensaje,
-    "created_at": fecha,
-    "id": id,
-    "topic_id": topicId
-  });
 };
 
 // Esta funcion cierra el modal donde aparecen las respuestas para abrir otro donde se podra agregar otra respuesta
@@ -132,7 +125,8 @@ var cerrarModalRespuestas = function (e) {
 };
 
 // Esta funcion pretende agregar respuestas
-var agregarRespuesta = function (respuesta) {
+var agregarRespuesta = function (e) {
+  e.preventDefault();
   var $padre = $("#padre");
   var $id = $padre.attr("data-id");
   
@@ -187,11 +181,6 @@ var agregarRespuesta = function (respuesta) {
     $("#modalRespuestas").modal("show");
   });
 
-
-  /*var fecha = $("<p>fecha: </p>");
-  var $fecha = $("<span />");
-  
-  var topic = $("<p>topic id: </p>");*/
 
 };
 

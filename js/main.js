@@ -85,10 +85,6 @@ var mostrarRespuestas = function (e) {
       $mensajeRespuesta.text(mensaje);
       $fecha.text(fecha);
       
-      $contenedorRespuestas.append($autor);
-      $contenedorRespuestas.append($mensajeRespuesta);
-      $contenedorRespuestas.append($fecha);
-      
     });
 
   });

@@ -133,7 +133,21 @@ var agregarRespuesta = function (e) {
 
   var autorRespuesta = $("#autorRespuesta").val();
   var contenidoRespuesta = $("#respuesta").val();
-  
+
+  $.post(api.url + $id + "/responses", {
+    author_name: autorRespuesta,
+    content: contenidoRespuesta,
+    
+  }, function (respuesta) {
+    agregarRespuesta(respuesta)
+    $("#crearRespuesta").modal("hide");
+    $("#modalRespuestas").modal("show");
+  });
+};
+
+
+var conseguirFechaYHoraPublicacion = function() {
+    
 
   var date = new Date();
   var dia = date.getDate();
@@ -167,22 +181,9 @@ var agregarRespuesta = function (e) {
   var fecha = dia + "-" + mes + "-" + ano;
   var hora =hora + ":" + minutos + ":" + segundos;
   var created = fecha + "T" + hora + ".501Z";
-  
-  
-
-
-  $.post(api.url + $id + "/responses", {
-    author_name: autorRespuesta,
-    content: contenidoRespuesta,
-    topic_id: $id
-  }, function (respuesta) {
     
-    $("#crearRespuesta").modal("hide");
-    $("#modalRespuestas").modal("show");
-  });
-
-
-};
-
+    return created;
+    console.log(created);
+ }; 
 $(document).on("click", ".res", mostrarRespuestas);
 $(document).ready(cargarPagina);
